@@ -609,6 +609,14 @@
       line-height: 1.35;
     }
 
+    .result-area-insight {
+      font-size: 0.97rem;
+      color: var(--sage);
+      line-height: 1.7;
+      margin-bottom: 18px;
+      font-weight: 500;
+    }
+
     .result-explanation {
       font-size: 0.96rem;
       color: var(--text-soft);
@@ -898,6 +906,7 @@
         <button class="option-btn" data-step="4" data-val="אני חייב/ת להצליח">אני חייב/ת להצליח</button>
         <button class="option-btn" data-step="4" data-val="משהו רע עומד לקרות">משהו רע עומד לקרות</button>
         <button class="option-btn" data-step="4" data-val="אני מאכזב/ת מישהו">אני מאכזב/ת מישהו</button>
+        <button class="option-btn full-width" data-step="4" data-val="אני כבר יודע/ת מה צריך לעשות — אבל לא מצליח/ה לזוז">אני כבר יודע/ת מה צריך לעשות — אבל לא מצליח/ה לזוז</button>
         <button class="option-btn full-width" data-step="4" data-val="אחר">אחר</button>
       </div>
       <div class="step-nav">
@@ -996,10 +1005,10 @@
             <input type="checkbox" id="callbackCheck" />
             <span>אשמח שתחזרו אליי לבדיקת התאמה קצרה</span>
           </label>
-          <button type="submit" class="btn-submit">שלחו לי את התוצאה בוואטסאפ</button>
+          <button type="submit" class="btn-submit">הצגת התוצאה שלי</button>
         </form>
         <p class="form-disclaimer">
-          בלחיצה על הכפתור, הפרטים והתשובות שלך יישלחו לגל לצורך שליחת התוצאה והסבר קצר בוואטסאפ.<br />
+          בלחיצה על הכפתור תראה את התוצאה האישית שלך, ותוכל לשלוח אותה לגל בוואטסאפ.<br />
           התרגיל אינו אבחון או טיפול.
         </p>
       </div>
@@ -1204,14 +1213,15 @@
   function calcResultType(a) {
     var s = { not_ready: 0, what_say: 0, overthink: 0, approval: 0, knows_time: 0 };
 
-    // Step 4 — inner voice sentence (primary driver)
+    // Step 4 — inner voice sentence (primary driver, highest weights)
     var s3 = a.step4 || '';
-    if (s3 === 'זה גדול עליי')                   { s.not_ready  += 3; }
-    if (s3 === 'אני לא מספיק טוב/ה')              { s.not_ready  += 2; s.approval   += 1; }
-    if (s3 === 'הם יראו שאני לא יודע/ת')          { s.what_say   += 3; }
-    if (s3 === 'אני חייב/ת להצליח')               { s.overthink  += 2; s.approval   += 1; }
-    if (s3 === 'משהו רע עומד לקרות')              { s.not_ready  += 2; s.knows_time += 1; }
-    if (s3 === 'אני מאכזב/ת מישהו')               { s.approval   += 3; }
+    if (s3 === 'זה גדול עליי')                                                    { s.not_ready  += 4; }
+    if (s3 === 'אני לא מספיק טוב/ה')                                              { s.not_ready  += 3; s.approval   += 1; }
+    if (s3 === 'הם יראו שאני לא יודע/ת')                                          { s.what_say   += 4; }
+    if (s3 === 'אני חייב/ת להצליח')                                               { s.overthink  += 3; s.approval   += 1; }
+    if (s3 === 'משהו רע עומד לקרות')                                              { s.not_ready  += 3; s.overthink  += 1; }
+    if (s3 === 'אני מאכזב/ת מישהו')                                               { s.approval   += 4; }
+    if (s3 === 'אני כבר יודע/ת מה צריך לעשות — אבל לא מצליח/ה לזוז')            { s.knows_time += 4; }
 
     // Step 5 — how the voice sounds
     var s4 = a.step5 || '';
@@ -1220,29 +1230,100 @@
     if (s4 === 'מאשים')                           { s.what_say   += 2; s.approval   += 1; }
     if (s4 === 'מפחיד')                           { s.not_ready  += 2; }
     if (s4 === 'מקטין')                           { s.not_ready  += 1; s.approval   += 1; }
-    if (s4 === 'שקט אבל מתמיד')                   { s.knows_time += 3; }
+    if (s4 === 'שקט אבל מתמיד')                   { s.knows_time += 2; }
     if (s4 === 'מוכר — כמו קול של מישהו מהעבר')  { s.approval   += 2; }
 
     // Step 6 — what it protects from
     var s5 = a.step6 || '';
     if (s5 === 'כישלון')                          { s.not_ready  += 1; s.overthink  += 1; }
-    if (s5 === 'ביקורת')                          { s.approval   += 2; }
+    if (s5 === 'ביקורת')                          { s.what_say   += 1; s.approval   += 1; }
     if (s5 === 'דחייה')                           { s.what_say   += 2; }
     if (s5 === 'בושה')                            { s.what_say   += 1; s.approval   += 1; }
     if (s5 === 'אכזבה')                           { s.approval   += 1; s.not_ready  += 1; }
     if (s5 === 'חוסר שליטה')                      { s.overthink  += 2; }
     if (s5 === 'פגיעה')                           { s.not_ready  += 2; }
 
-    // Step 7 — is it a protection mechanism?
+    // Step 7 — low-weight confirmation only
     var s6 = a.step7 || '';
-    if (s6 === 'כן, זה מרגיש כמו מנגנון הגנה')    { s.knows_time += 3; }
-    if (s6 === 'אולי, לא חשבתי על זה ככה')        { s.overthink  += 2; }
+    if (s6 === 'כן, זה מרגיש כמו מנגנון הגנה')    { s.knows_time += 1; }
+    if (s6 === 'אולי, לא חשבתי על זה ככה')        { s.overthink  += 1; }
     if (s6 === 'לא בטוח/ה')                       { s.not_ready  += 1; }
-    if (s6 === 'עדיין מרגיש לי שזה אני')           { s.not_ready  += 2; }
+    if (s6 === 'עדיין מרגיש לי שזה אני')           { s.not_ready  += 1; }
 
-    var winner = 'not_ready', max = -1;
-    Object.keys(s).forEach(function(k) { if (s[k] > max) { max = s[k]; winner = k; } });
-    return winner;
+    // Find the maximum score
+    var max = -1;
+    Object.keys(s).forEach(function(k) { if (s[k] > max) max = s[k]; });
+
+    // Collect all tied keys
+    var tied = Object.keys(s).filter(function(k) { return s[k] === max; });
+    if (tied.length === 1) return tied[0];
+
+    // Tie-break 1: prefer Step 4 primary mapping
+    var step4Primary = {
+      'זה גדול עליי':                                                 'not_ready',
+      'אני לא מספיק טוב/ה':                                          'not_ready',
+      'הם יראו שאני לא יודע/ת':                                      'what_say',
+      'אני חייב/ת להצליח':                                           'overthink',
+      'משהו רע עומד לקרות':                                          'not_ready',
+      'אני מאכזב/ת מישהו':                                           'approval',
+      'אני כבר יודע/ת מה צריך לעשות — אבל לא מצליח/ה לזוז':        'knows_time'
+    };
+    var primary4 = step4Primary[s3];
+    if (primary4 && tied.indexOf(primary4) !== -1) return primary4;
+
+    // Tie-break 2: Step 5 secondary mapping
+    var step5Secondary = {
+      'ביקורתי':                        'approval',
+      'לחוץ':                           'overthink',
+      'מאשים':                          'what_say',
+      'מפחיד':                          'not_ready',
+      'מקטין':                          'approval',
+      'שקט אבל מתמיד':                  'knows_time',
+      'מוכר — כמו קול של מישהו מהעבר': 'approval'
+    };
+    var secondary5 = step5Secondary[s4];
+    if (secondary5 && tied.indexOf(secondary5) !== -1) return secondary5;
+
+    // Tie-break 3: stable fallback order
+    var fallback = ['not_ready', 'what_say', 'overthink', 'approval', 'knows_time'];
+    for (var i = 0; i < fallback.length; i++) {
+      if (tied.indexOf(fallback[i]) !== -1) return fallback[i];
+    }
+    return tied[0];
+  }
+
+  // ── Area × Voice personalisation ────────────────────
+  function getAreaVoiceInsight(resultType, lifeArea) {
+    if (resultType === 'approval') {
+      var map = {
+        'עבודה / קריירה':
+          'הקול הזה מופיע לעיתים קרובות בתחום העבודה, כשמשהו בתוכך רוצה לזוז קדימה — לבקש, לשנות, להציע — אבל מחכה שמישהו אחר יאשר שמותר לך לרצות את זה.',
+        'זוגיות / משפחה':
+          'הקול הזה מופיע הרבה בתחום הזוגיות, כשיש דברים שאת/ה שומר/ת בפנים מתוך רצון לא לאכזב, לא לפגוע, ולא לעמוד בניגוד למה שמצפים ממך.',
+        'קבלת החלטות':
+          'הקול הזה מופיע ממש בלב קבלת ההחלטות, כשאת/ה כבר יודע/ת מה נכון לך — אבל עדיין מחפש/ת אישור, אות, או רשות מבחוץ שיגידו שזה בסדר לזוז.',
+        'ביטחון עצמי':
+          'הקול הזה מופיע עמוק בתחום הביטחון העצמי, כשמשהו בתוכך מחכה להרגיש ראוי/ה, מספיק/ה, מוכר/ה — לפני שמרשה לעצמך לזוז.',
+        'שינוי שאני רוצה לעשות':
+          'הקול הזה מופיע ממש מול השינוי שאת/ה רוצה לעשות, כשחלק בתוכך כבר מוכן — אבל עדיין מחפש/ת שמישהו יאמר לך שמותר לשנות, גם אם זה עלול להפתיע מישהו בדרך.',
+        'עומס כללי':
+          'הקול הזה מופיע בתוך העומס הכללי, כשהמון דברים לוחצים מבחוץ — ומתחת לכול זה יש שאלה שחוזרת: האם מותר לי לבחור מה חשוב לי, גם אם זה לא מה שמצפים ממני.'
+      };
+      return map[lifeArea] || 'הקול הזה מופיע כשמשהו בתוכך כבר יודע — אבל עדיין מחפש אישור ממישהו או ממשהו מבחוץ, כדי שיהיה בסדר לזוז.';
+    }
+    if (resultType === 'not_ready') {
+      return 'הקול הזה מלווה אותך גם בתחום שבחרת — לפעמים בדמות זהירות, לפעמים כהיסוס, ולפעמים כתחושה שמשהו עדיין צריך להתבשל לפני שאפשר לזוז.';
+    }
+    if (resultType === 'what_say') {
+      return 'הקול הזה מלווה אותך גם בתחום שבחרת — הדאגה מה יחשבו נכנסת פנימה ממש כשאת/ה עומד/ת לבחור או לפעול, לפעמים לפני שמספיקים לשמוע את הקול שלך.';
+    }
+    if (resultType === 'overthink') {
+      return 'הקול הזה מלווה אותך גם בתחום שבחרת — הנטייה לנתח ולחשוב ממשיכה גם כשרוב הדברים כבר ברורים, ולפעמים ממש כשמשהו כמעט קורה בפועל.';
+    }
+    if (resultType === 'knows_time') {
+      return 'הקול הזה מלווה אותך גם בתחום שבחרת — הידיעה שהגיע הזמן כבר קיימת, אבל יש משהו שמעכב את הצעד הראשון, גם כשהכיוון כבר מוכר.';
+    }
+    return '';
   }
 
   function buildResultHTML(type, a) {
@@ -1256,31 +1337,31 @@
 
     var explanations = {
       not_ready:
-        'הקול הזה מופיע לפני פעולה, לפני שינוי, לפני צעד חדש. הוא אומר: ״עוד לא, עוד לא מספיק, עוד לא הגיע הזמן.״ לרוב הוא מתחפש לזהירות — אבל בפנים הוא שומר עליך מפני הפחד שיתגלה שאת/ה לא מספיק.',
+        'הקול הזה מופיע הרבה פעמים רגע לפני צעד חדש. הוא נשמע אחראי, זהיר ואפילו הגיוני: "עוד לא עכשיו", "אני צריך/ה עוד זמן", "כדאי לחכות עד שארגיש בטוח/ה יותר".\n\nאבל לפעמים מאחורי הזהירות הזו מסתתר פחד עמוק יותר — להיכשל, להתאכזב, להיחשף או לגלות שאני לא מספיק.\n\nלפי מה שעלה בתרגיל, ייתכן שהגוף שלך מסמן מקום שבו חלק בתוכך רוצה לזוז, וחלק אחר עדיין מבקש לעצור כדי לשמור עליך.',
       what_say:
-        'הקול הזה רגיש מאוד למבט של אחרים. הוא עוקב אחרי שאלה אחת: ״אם הם יראו — מה יחשבו?״ לרוב הוא מונע חשיפה, ספונטניות, או פעולה גלויה. הפחד מביקורת או מחרפה הופך למנוע סמוי שמכתיב החלטות.',
+        'הקול הזה לא תמיד נשמע כמו פחד. לפעמים הוא נשמע כמו "צריך לחשוב על ההשלכות", "לא נעים", "מה יחשבו עליי", או "איך זה ייראה מבחוץ".\n\nזה קול שמכוון את תשומת הלב החוצה — אל תגובות, ציפיות, ביקורת או אכזבה של אחרים. כשהוא חזק, הבחירה הפנימית שלך עלולה להידחק הצידה.\n\nלפי מה שעלה בתרגיל, ייתכן שיש מקום שבו את/ה כבר מרגיש/ה משהו בפנים — אבל לפני שהקול שלך מספיק להישמע, נכנס הקול ששואל איך זה יתקבל אצל אחרים.',
       overthink:
-        'הקול הזה אוהב ניתוח. הוא מחפש עוד מידע, עוד תכנון, עוד ודאות — לפני שמתחילים. בפועל, הוא מחזיק אותך במקום מוכר ובטוח, ומונע את הפעולה שיכולה לשנות משהו.',
+        'הקול הזה אוהב להבין, לבדוק, לנתח, לתכנן ולוודא. הוא לא בהכרח חלש — הרבה פעמים הוא דווקא מאוד חכם. הבעיה מתחילה כשהחשיבה הופכת למקום מסתור מפני פעולה.\n\nבמקום לעשות צעד קטן, הקול הזה מחפש עוד ודאות. עוד מידע. עוד סימן. עוד רגע מתאים. וכך משהו שרוצה לזוז נשאר תקוע בתוך הראש.\n\nלפי מה שעלה בתרגיל, ייתכן שהעומס או התחושה בגוף לא מגיעים מחוסר הבנה — אלא מהפער בין כל מה שכבר ברור לך בראש, לבין הצעד שעדיין לא קרה בפועל.',
       approval:
-        'הקול הזה מחפש אישור — ממישהו, מהמציאות, מסימן כלשהו — לפני שנע קדימה. הוא חי בשאלה: ״מה חושבים עליי?״ לרוב הוא גדל בסביבה שבה אישור חיצוני היה חשוב יותר מתחושה פנימית.',
+        'הקול הזה מופיע כשמשהו בתוכך כבר יודע, אבל עדיין מחפש אישור ממישהו אחר — אדם קרוב, סמכות, סביבה, או אפילו "סימן" מהמציאות.\n\nלפעמים זה מרגיש כמו זהירות. אבל מתחת לזה יכולה להיות שאלה עמוקה יותר: "האם מותר לי לבחור בזה?", "האם מותר לי לרצות?", "האם אני יכול/ה לסמוך על עצמי?"\n\nלפי מה שעלה בתרגיל, ייתכן שהקול הזה מנסה להגן עליך מפני ביקורת, אכזבה או תחושה שתישאר/י לבד עם הבחירה שלך.',
       knows_time:
-        'הקול הזה מיוחד — כי חלק ממך כבר מכיר אותו. יש בך ידיעה שמשהו צריך להשתנות, שהזמן הגיע — אבל הפעולה עדיין לא קורית. לעיתים מה שעוצר הוא לא ספק, אלא הפחד ממה שיקרה אחרי שתתחיל.'
+        'זה קול שמופיע כשכבר אין באמת צורך בעוד הסברים. חלק בתוכך יודע שמשהו צריך להשתנות. אולי אפילו יודע מה הצעד הבא. ועדיין — משהו לא זז.\n\nבמצב כזה התקיעות לא תמיד נובעת מחוסר מודעות. לפעמים היא מגיעה מהרגע שבו שינוי מפסיק להיות רעיון, ומתחיל להפוך למציאות.\n\nלפי מה שעלה בתרגיל, ייתכן שיש בך כבר ידיעה פנימית ברורה — אבל יש גם חלק שמבקש לעצור, כי הוא מבין שאם תתחיל/י לזוז, משהו באמת ישתנה.'
     };
 
     var questions = {
-      not_ready:  'מה הצעד הכי קטן שיכולת לעשות — שלא ידרוש ממך מוכנות מלאה?',
-      what_say:   'מה היית עושה אחרת — אם לאף אחד לא הייתה דעה על הבחירה הזו?',
-      overthink:  'בין הניתוח לפעולה — מה חסר לך כדי להתחיל, גם בלי ודאות מלאה?',
-      approval:   'אם את/ה כבר יודע/ת מה נכון לך — מה עוצר אותך מלפעול לפי זה בלי לחכות לאישור?',
-      knows_time: 'אם היית יודע/ת שאת/ה לא יכול/ה להיכשל — מה היה הצעד הראשון שהיית עושה עכשיו?'
+      not_ready:  'מה הצעד הכי קטן שאפשר לעשות — גם בלי להרגיש מוכנ/ה לגמרי?',
+      what_say:   'מה היית עושה אחרת אם לאף אחד לא הייתה דעה על הבחירה שלך?',
+      overthink:  'איזה צעד קטן אפשר לעשות בלי לפתור קודם את כל השאלות?',
+      approval:   'אם כבר היה לך אישור מלא לבחור בעצמך — מה היית עושה אחרת?',
+      knows_time: 'מה המחיר של להישאר עוד כמה חודשים בדיוק באותו מקום?'
     };
 
     var ctas = {
-      not_ready:  'אם הקול הזה מוכר לך ממצבים רבים בחיים — אפשר לעבוד עליו יחד בתהליך אימון אישי או קבוצתי עם גל.',
-      what_say:   'אם הקול הזה מכתיב לך החלטות שלא מרגישות שלך — אפשר להתחיל לזהות את הדפוס הזה בתהליך אישי עם גל.',
-      overthink:  'אם את/ה מכיר/ה את הדפוס של חשיבה ללא תנועה — אפשר לעבוד על זה ביחד בתהליך ממוקד עם גל.',
-      approval:   'אם הקול הזה מוכר לך מקשרים, עבודה, או החלטות אישיות — אפשר לבדוק יחד מה מאחוריו.',
-      knows_time: 'אם הידיעה כבר שם אבל התנועה עדיין תקועה — אפשר לבדוק יחד מה עוצר אותה.'
+      not_ready:  'אם הקול הזה מוכר לך בעוד מקומות בחיים, אפשר לבדוק יחד מה הוא מנסה להגן עליו — ואיך מתחילים לזוז בלי להילחם בו.',
+      what_say:   'אם הקול הזה מנהל אותך מול משפחה, עבודה, זוגיות או החלטות חשובות — אפשר להתחיל לזהות איפה הוא משתלט, ואיך מחזירים את הבחירה אליך.',
+      overthink:  'אם את/ה מכיר/ה את הדפוס הזה של חשיבה בלי תנועה, אפשר לעבוד יחד על מעבר עדין וברור יותר מהבנה לפעולה.',
+      approval:   'אם את/ה מרגיש/ה שאת/ה מחכה שמישהו או משהו יאשר לך לזוז, אפשר לבדוק יחד איך מחזירים את הסמכות הפנימית אליך.',
+      knows_time: 'אם הידיעה כבר קיימת אבל התנועה עדיין לא קורית, אפשר לבדוק יחד מה עוצר את הצעד הראשון — ואיך מתחילים ממנו בצורה שמתאימה לך.'
     };
 
     var area   = a.step1 || '';
@@ -1293,7 +1374,6 @@
     var html = '';
     html += '<div class="result-type-badge">הקול הפנימי שלך</div>';
     html += '<div class="result-title">' + titles[type] + '</div>';
-    html += '<p class="result-explanation">' + explanations[type] + '</p>';
 
     html += '<div class="result-answers"><p>';
     if (area) {
@@ -1305,6 +1385,13 @@
     html += 'והקול נשמע <strong>' + tone + '</strong>. ';
     html += 'יכול להיות שהקול הזה מנסה להגן עליך מפני <strong>' + prot + '</strong>.';
     html += '</p></div>';
+
+    var areaInsight = getAreaVoiceInsight(type, area);
+    if (areaInsight) {
+      html += '<p class="result-area-insight">' + areaInsight + '</p>';
+    }
+
+    html += '<p class="result-explanation">' + explanations[type] + '</p>';
 
     html += '<div class="result-coaching-q">';
     html += '<div class="result-coaching-label">שאלה לחשיבה</div>';
@@ -1386,18 +1473,27 @@
     document.getElementById('thankyouWaCta').style.display = 'block';
 
     // Background lead backup — fire and forget, no redirect
-    var leadEndpoint = 'https://script.google.com/macros/s/AKfycbx0_PJvNhJ5r1-aIbF1XOc-pckeJbW_A1_ifjyGyckX8YgbgsbfsUmVN9aDsrMjfmu7zg/exec';
+    var leadEndpoint = 'https://script.google.com/macros/s/AKfycbzC9_hPwoZWTFgL48GnrO4V7N_W5-xeXykJXYHEeRE6xbLmk3-TYfnNfx7Ha0XLnI2AHg/exec';
     fetch(leadEndpoint, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name:         name,
-        phone:        userPhone,
-        resultTitle:  resultTitle,
-        resultKey:    resultType,
-        pageUrl:      window.location.href,
-        submittedAt:  new Date().toISOString()
+        name:                name,
+        phoneOriginal:       originalPhone,
+        phoneNormalized:     normalizedPhone,
+        callbackRequest:     callback,
+        lifeArea:            answers.step1     || '',
+        lifeAreaDescription: answers.step1desc || '',
+        bodyLocation:        answers.step2     || '',
+        innerSentence:       answers.step4     || '',
+        voiceTone:           answers.step5     || '',
+        protectedFeeling:    answers.step6     || '',
+        protectionInsight:   answers.step7     || '',
+        resultTitle:         resultTitle,
+        resultKey:           resultType,
+        pageUrl:             window.location.href,
+        submittedAt:         new Date().toISOString()
       })
     }).catch(function(error) {
       console.log('Lead backup failed:', error);
