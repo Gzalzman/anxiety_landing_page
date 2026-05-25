@@ -1361,29 +1361,29 @@
     };
     console.log('Lead:', JSON.stringify(submission, null, 2));
 
-    // Build and inject personalized result
+    // Build and inject personalized result, show thank-you screen
     document.getElementById('resultContent').innerHTML = buildResultHTML(resultType, answers);
-
-    // Set optional WhatsApp CTA (user must click manually)
-    var waLines = ["ליד חדש מהתרגיל 'השער דרך הגוף' 🌿", ''];
-    waLines.push('שם: '              + name);
-    waLines.push('טלפון: '          + normalizedPhone);
-    waLines.push('טלפון כפי שהוזן: ' + originalPhone);
-    waLines.push('');
-    waLines.push('התוצאה: '         + resultTitle);
-    if (answers.step1) waLines.push('תחום: '           + answers.step1);
-    if (answers.step2) waLines.push('איפה בגוף: '      + answers.step2);
-    if (answers.step4) waLines.push('המשפט שעלה: '     + answers.step4);
-    if (answers.step5) waLines.push('הקול נשמע: '      + answers.step5);
-    if (answers.step6) waLines.push('מנסה למנוע: '     + answers.step6);
-    if (answers.step7) waLines.push('מנגנון הגנה: '    + answers.step7);
-    if (callback)      waLines.push('', 'מבקש/ת בדיקת התאמה קצרה ✓');
-    var waOptMsg = waLines.join('\n');
-    document.getElementById('thankyouWaBtn').href = 'https://wa.me/972528330884?text=' + encodeURIComponent(waOptMsg);
-    document.getElementById('thankyouWaCta').style.display = 'block';
-
     showScreen('thankyou');
     document.getElementById('education').style.display = 'block';
+
+    // WhatsApp redirect — fires from the submit event (user gesture)
+    var coachPhone = '972528330884';
+    var message = 'היי גל, מילאתי את השאלון.\n' +
+      'שם: ' + name + '\n' +
+      'טלפון: ' + normalizedPhone + '\n' +
+      'התוצאה שלי: ' + resultTitle + '\n\n' +
+      'אשמח לקבל הסבר קצר על האפשרויות בתהליך האימון.';
+    if (callback) message += '\n\nאשמח שתחזרו אליי לבדיקת התאמה קצרה.';
+
+    var whatsappUrl = 'https://wa.me/' + coachPhone + '?text=' + encodeURIComponent(message);
+    console.log('WhatsApp URL:', whatsappUrl);
+
+    // Show fallback button in case auto-redirect fails or user returns from WhatsApp
+    var waBtn = document.getElementById('thankyouWaBtn');
+    waBtn.href = whatsappUrl;
+    document.getElementById('thankyouWaCta').style.display = 'block';
+
+    window.location.href = whatsappUrl;
   }
 
   // ── Init ─────────────────────────────────────────────
