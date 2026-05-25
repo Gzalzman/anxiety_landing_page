@@ -1118,7 +1118,7 @@
     intro:    ['intro'],
     exercise: ['exercise'],
     lead:     ['completion', 'lead'],
-    thankyou: ['thankyou', 'whatsapp']
+    thankyou: ['thankyou']
   };
 
   function showScreen(name) {
@@ -1366,7 +1366,7 @@
     showScreen('thankyou');
     document.getElementById('education').style.display = 'block';
 
-    // WhatsApp redirect — fires from the submit event (user gesture)
+    // Build WhatsApp URL — button shown, user clicks manually
     var coachPhone = '972528330884';   // destination only — never used as userPhone
     var userPhone  = normalizedPhone;  // from the form input
 
@@ -1385,13 +1385,8 @@
     waBtn.href = whatsappUrl;
     document.getElementById('thankyouWaCta').style.display = 'block';
 
- HEAD
-    // Background lead backup — then always redirect to WhatsApp
-    var leadEndpoint = 'https://script.google.com/macros/s/AKfycbx0_PJvNhJ5r1-aIbF1XOc-pckeJbW_A1_ifjyGyckX8YgbgsbfsUmVN9aDsrMjfmu7zg/exec';
-
     // Background lead backup — fire and forget, no redirect
     var leadEndpoint = 'https://script.google.com/macros/s/AKfycbzC9_hPwoZWTFgL48GnrO4V7N_W5-xeXykJXYHEeRE6xbLmk3-TYfnNfx7Ha0XLnI2AHg/exec';
- 7ddbb06 (Add lead backup endpoint)
     fetch(leadEndpoint, {
       method: 'POST',
       mode: 'no-cors',
