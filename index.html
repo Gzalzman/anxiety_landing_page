@@ -1040,7 +1040,7 @@
     </p>
     <a
       id="whatsappLink"
-      href="https://wa.me/972528330884"
+      href="https://api.whatsapp.com/send?phone=972528330884"
       target="_blank"
       rel="noopener noreferrer"
       class="btn-whatsapp"
@@ -1375,7 +1375,7 @@
       'אשמח לקבל הסבר קצר על האפשרויות בתהליך האימון.';
     if (callback) message += '\n\nאשמח שתחזרו אליי לבדיקת התאמה קצרה.';
 
-    var whatsappUrl = 'https://wa.me/' + coachPhone + '?text=' + encodeURIComponent(message);
+    var whatsappUrl = 'https://api.whatsapp.com/send?phone=' + coachPhone + '&text=' + encodeURIComponent(message);
     console.log('WhatsApp URL:', whatsappUrl);
 
     // Show fallback button in case auto-redirect fails or user returns from WhatsApp
