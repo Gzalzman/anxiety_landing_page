@@ -152,9 +152,49 @@
     }
 
     .hero-disclaimer {
-      margin-top: 18px;
+      margin-top: 14px;
       font-size: 0.8rem;
       color: var(--text-muted);
+    }
+
+    /* ─── Hero CTA stack ───────────────────────────── */
+    .hero-cta-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* ─── Coach Link Card ──────────────────────────── */
+    .hero-coach-link {
+      display: block;
+      background: var(--sage-pale);
+      border: 1px solid var(--sage-light);
+      border-radius: var(--radius-sm);
+      padding: 12px 22px;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-coach-link p {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .hero-coach-link a {
+      font-size: 0.88rem;
+      color: #4a7a4e;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s, text-decoration 0.2s;
+    }
+
+    .hero-coach-link a:hover {
+      color: #355838;
+      text-decoration: underline;
     }
 
     /* ─── Intro Card ───────────────────────────────── */
@@ -796,7 +836,13 @@
       תרגיל קצר של 3–4 דקות שיעזור לך לזהות איפה מתח, עומס או חרדה פוגשים אותך בגוף —
       ואיזה קול פנימי אולי עומד מאחוריהם.
     </p>
-    <button class="btn-primary" onclick="scrollToIntro()">להתחיל את התרגיל</button>
+    <div class="hero-cta-stack">
+      <button class="btn-primary" onclick="scrollToIntro()">להתחיל את התרגיל</button>
+      <div class="hero-coach-link">
+        <p>רוצים להכיר אותי קצת לפני שמתחילים?</p>
+        <a href="https://gz-coach.vercel.app/" target="_blank" rel="noopener noreferrer">קצת עליי ועל הדרך שלי ←</a>
+      </div>
+    </div>
     <p class="hero-disclaimer">זה לא אבחון ולא טיפול — רק רגע קצר של הקשבה למה שקורה בפנים.</p>
   </div>
 </section>
